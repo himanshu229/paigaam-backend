@@ -1,0 +1,18 @@
+{
+  "name": "paigaam-backend",
+  "version": "1.0.0",
+  "description": "chat backend server ",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon src/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "himanshu singh",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.18.1",
+    "nodemon": "^2.0.16",
+    "socket.io": "^4.5.1"
+  }
+}
