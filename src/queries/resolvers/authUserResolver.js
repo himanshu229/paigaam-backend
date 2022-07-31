@@ -42,8 +42,8 @@ const createuser = async (parent, args) => {
     if (passwordValidate.value) {
       throw new Error(passwordValidate.message);
     }
-    const result = await user.save();
-    return { ...result._doc };
+    await user.save();
+    return { message: "User has been register...", isLogin: true };
   } catch (err) {
     throw err;
   }

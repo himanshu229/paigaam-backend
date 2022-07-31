@@ -3,10 +3,12 @@ const bodyParser = require("body-parser");
 const http = require("http");
 const cors = require("cors");
 const { ApolloServer } = require("apollo-server-express");
-const { ApolloServerPluginDrainHttpServer } = require("apollo-server-core");
+const {
+  ApolloServerPluginLandingPageLocalDefault,
+} = require("apollo-server-core");
 const socketIo = require("socket.io");
 
-const { queryschema } = require("./query");
+const { queryschema } = require("./queries");
 const { corsAuth, istokenAuth } = require("./middleware");
 require("./dbConnection/connection");
 
@@ -23,7 +25,7 @@ const httpServer = http.createServer(app);
 
 const serverApollo = new ApolloServer({
   schema: queryschema,
-  plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
+  plugins: [ApolloServerPluginLandingPageLocalDefault({ embed: true })],
 });
 
 const serverStart = async () => {
