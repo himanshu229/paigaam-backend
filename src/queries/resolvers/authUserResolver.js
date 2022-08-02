@@ -1,49 +1,37 @@
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
-const { passwordValidator } = require("../../helper/passwordValidate");
+const { passwordValidator } = require("../../helper");
 const { User } = require("../../module");
+const bcrypt = require("bcryptjs");
 
 const loginUser = async (parent, args) => {
-  const user = await User.findOne({
+  const isValidator = passwordValidator(args.user.password);
+  const users = await User.findOne({
     phoneNumber: args.user.phoneNumber,
   });
-  if (!user) {
+  if (!users) {
     throw new Error("User does not exist!");
   }
-  const isEqual = await bcrypt.compare(args.user.password, user.password);
-
-  if (!isEqual) {
-    throw new Error("Password is incorrect!");
+  if (isValidator.value) {
+    throw new Error(isValidator.message);
   }
-  const token = await jwt.sign(
-    { userId: user.distinct, email: user.email },
-    "somesupersecreatekey",
-    {
-      expiresIn: "1h",
-    }
-  );
-  return { ...user._doc, token: token, tokenExpiration: 1 };
+  const isEqual = await bcrypt.compare(args.user.password, users.password);
+  if (!isEqual) {
+    throw new Error("Password is incorrect...");
+  }
+  const token = await users.generateAuthToken();
+  return { isAuth: true, token: token, tokenExpiration: 1 };
 };
 
 const createuser = async (parent, args) => {
-  const passwordValidate = passwordValidator(
-    args.user.password,
-    args.user.confirmPassword
-  );
-
   try {
-    const hashedpassword = await bcrypt.hash(args.user.password, 12);
     const user = new User({
       phoneNumber: args.user.phoneNumber,
-      password: hashedpassword,
+      password: args.user.password,
       firstName: args.user.firstName,
       lastName: args.user.lastName,
+      confirmPassword: args.user.confirmPassword,
     });
-    if (passwordValidate.value) {
-      throw new Error(passwordValidate.message);
-    }
     await user.save();
-    return { message: "User has been register...", isLogin: true };
+    return { message: "User has been registered...", isLogin: true };
   } catch (err) {
     throw err;
   }

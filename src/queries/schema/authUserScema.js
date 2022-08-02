@@ -7,12 +7,7 @@ module.exports = gql`
   }
 
   type LoginUsers {
-    _id: ID!
-    firstName: String!
-    lastName: String!
-    phoneNumber: String!
-    createdAt: String!
-    updatedAt: String!
+    isAuth: Boolean!
     token: String!
   }
 
