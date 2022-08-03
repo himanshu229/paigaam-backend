@@ -63,25 +63,39 @@ userSchema.methods.generateAuthToken = async function () {
     this.tokens = this.tokens.concat({
       token,
     });
-    //when token generate sign in time then remove it
     await this.save();
     return token;
   } catch (err) {
     throw err;
   }
 };
-userSchema.pre("save", async function (next) {
-  if (this.tokens.length === 0) {
-    const isValidator = passwordValidator(this.password, this.confirmPassword);
+
+userSchema.methods.generateHashingPassword = async function () {
+  const isValidator = passwordValidator(this.password, this.confirmPassword);
+  try {
     if (isValidator.value) {
-      next(new Error(isValidator.message));
+      throw new Error(isValidator.message);
     }
     if (this.isModified("password")) {
       this.password = await bcrypt.hash(this.password, 12);
       this.confirmPassword = undefined;
     }
+  } catch (err) {
+    throw err;
   }
-  next();
-});
+};
+// userSchema.pre("save", async function (next) {
+//   if (this.tokens.length === 0) {
+//     const isValidator = passwordValidator(this.password, this.confirmPassword);
+//     if (isValidator.value) {
+//       next(new Error(isValidator.message));
+//     }
+//     if (this.isModified("password")) {
+//       this.password = await bcrypt.hash(this.password, 12);
+//       this.confirmPassword = undefined;
+//     }
+//   }
+//   next();
+// });
 
 module.exports = mongoose.model("User", userSchema);

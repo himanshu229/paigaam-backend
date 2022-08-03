@@ -35,6 +35,7 @@ const createuser = async (parent, args) => {
       lastName: args.user.lastName,
       confirmPassword: args.user.confirmPassword,
     });
+    await user.generateHashingPassword();
     await user.save();
     return { message: "User has been registered...", isLogin: true };
   } catch (err) {
@@ -45,11 +46,14 @@ const createuser = async (parent, args) => {
 const logOutUser = async (parent, args) => {
   const token = jwt.verify(args.token, `${process.env.TOKEN_KEY}`);
   try {
-    await User.findOneAndUpdate(
-      { _id: token._id },
-      { $pull: { tokens: { token: args.token } } },
-      { new: true }
-    );
+    const user = await User.findOne({ _id: token._id });
+    user.tokens = [];
+    user.save();
+    // await User.findOneAndUpdate(
+    //   { _id: token._id },
+    //   { $pull: { tokens: { token: args.token } } },
+    //   { new: true }
+    // );
     return {
       isLogout: true,
     };
