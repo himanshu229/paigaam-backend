@@ -1,5 +1,6 @@
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
+const { User } = require("../module");
 
 const corsAuth = {
   origin: `${process.env.CLIENT_URL}`,
@@ -24,19 +25,20 @@ const tokenAuth = async (req, res, next) => {
     req.isAuth = false;
     return next();
   }
-  let decodedToken;
+  let verifyUser;
   try {
-    decodedToken = jwt.verify(token, "somesupersecreatekey");
+    verifyUser = jwt.verify(token, `${process.env.TOKEN_KEY}`);
+    await User.findOne({ _id: verifyUser._id });
   } catch (e) {
     req.isAuth = false;
     return next();
   }
-  if (!decodedToken) {
+  if (!verifyUser) {
     req.isAuth = false;
     return next();
   }
   req.isAuth = true;
-  req.userId = decodedToken.userId;
+  req.userId = verifyUser.userId;
   next();
 };
 

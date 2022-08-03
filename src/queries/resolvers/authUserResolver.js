@@ -1,6 +1,8 @@
 const { passwordValidator } = require("../../helper");
 const { User } = require("../../module");
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+require("dotenv").config();
 
 const loginUser = async (parent, args) => {
   const isValidator = passwordValidator(args.user.password);
@@ -18,7 +20,10 @@ const loginUser = async (parent, args) => {
     throw new Error("Password is incorrect...");
   }
   const token = await users.generateAuthToken();
-  return { isAuth: true, token: token, tokenExpiration: 1 };
+  return {
+    isAuth: true,
+    token: token,
+  };
 };
 
 const createuser = async (parent, args) => {
@@ -37,9 +42,28 @@ const createuser = async (parent, args) => {
   }
 };
 
+const logOutUser = async (parent, args) => {
+  const token = jwt.verify(args.token, `${process.env.TOKEN_KEY}`);
+  try {
+    await User.findOneAndUpdate(
+      { _id: token._id },
+      { $pull: { tokens: { token: args.token } } },
+      { new: true }
+    );
+    return {
+      isLogout: true,
+    };
+  } catch (err) {
+    throw err;
+  }
+};
+
 module.exports = {
   Mutation: {
     createUser: createuser,
     loginUser: loginUser,
+  },
+  Query: {
+    logOutUser: logOutUser,
   },
 };
